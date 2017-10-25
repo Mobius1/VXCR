@@ -5,4 +5,4 @@ The program does away with the need to manually rip your CDs to Xbox to play in 
 
 ---
 
-Based on original souce code by BlueCELL.
+Based on original souce code by BlueCELL and XBOX War3z.
