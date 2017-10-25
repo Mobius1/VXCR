@@ -1,0 +1,3 @@
+#xFIXED-When creating a new soundtrack, if we hit cancel, the software crash and close
+-Delete Dont work
+-i get this when i search for a .mp3 file and after it finds 1 file i get the error and the program crashes

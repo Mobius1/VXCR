@@ -1,0 +1,64 @@
+UsedID's(0): 17
+Ubound: 0
+Compare: 17 : 13
+FreeSongGroupFnd: 0
+
+UsedID's(0): 17
+UsedID's(1): 18
+Ubound: 1
+Compare: 17 : 17
+Compare: 17 : 16
+Compare: 18 : 16
+FreeSongGroupFnd: 1
+
+UsedID's(0): 17
+UsedID's(1): 18
+UsedID's(2): 19
+Ubound: 2
+Compare: 17 : 17
+Compare: 17 : 18
+Compare: 18 : 18
+Compare: 17 : 4
+Compare: 18 : 4
+Compare: 19 : 4
+FreeSongGroupFnd: 2
+
+UsedID's(0): 17
+UsedID's(1): 18
+UsedID's(2): 19
+UsedID's(3): 20
+Ubound: 3
+Compare: 17 : 17
+Compare: 17 : 18
+Compare: 18 : 18
+Compare: 17 : 19
+Compare: 18 : 19
+Compare: 19 : 19
+Compare: 17 : 5
+Compare: 18 : 5
+Compare: 19 : 5
+Compare: 20 : 5
+FreeSongGroupFnd: 3
+
+UsedID's(0): 17
+UsedID's(1): 18
+UsedID's(2): 19
+UsedID's(3): 20
+UsedID's(4): 21
+Ubound: 4
+Compare: 17 : 17
+Compare: 17 : 18
+Compare: 18 : 18
+Compare: 17 : 19
+Compare: 18 : 19
+Compare: 19 : 19
+Compare: 17 : 20
+Compare: 18 : 20
+Compare: 19 : 20
+Compare: 20 : 20
+Compare: 17 : 3
+Compare: 18 : 3
+Compare: 19 : 3
+Compare: 20 : 3
+Compare: 21 : 3
+FreeSongGroupFnd: 4

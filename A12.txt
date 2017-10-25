@@ -1,0 +1,589 @@
+'---------------------------------------------------
+'Xbox Sound Track Editor Module 1.00 (CONFIDUENTUAL)
+'
+'Created by: BlueCELL & XBOX War3z
+'Date: Feb 25, 2004 10:31AM
+'---------------------------------------------------
+
+'Magic Values
+Const SOUNDTRACK_MAGIC = 136049
+Const SONGGROUP_MAGIC = 200819
+
+'Max Constants
+Const MAX_SOUNDTRACK_COUNT = 100
+Const MAX_SOUNDTRACK_NAME = 32 * 2 'Unicode
+Const MAX_SONG_NAME = 32 * 2 'Unicode
+
+'Definition of each soundtrack
+Private Type SoundTrack
+    lngMagic As Long 'always check for SOUNDTRACK_MAGIC
+    lngID As Long
+    lngSongCount As Long
+    lngGroupId(0 To 83) As Long 'total of max 84*6 = 504 songs
+    lngTotalTime As Long
+    strName As String * MAX_SOUNDTRACK_NAME
+    bytFiller(0 To 95) As Byte
+End Type
+
+'Definition of the header
+Private Type SoundTrack_Header
+    lngUnknown As Long 'always 1
+    lngCount As Long
+    lngNextId As Long
+    lngID(0 To MAX_SOUNDTRACK_COUNT - 1) As Long
+    lngNextSongId As Long
+    bytFiller(0 To 95) As Byte
+    stSoundtracks(0 To MAX_SOUNDTRACK_COUNT - 1) As SoundTrack
+End Type
+
+Private Type SongGroup
+    lngMagic As Long 'always SONGGROUP_MAGIC
+    lngSoundtrackId As Long
+    lngGroupId As Long
+    lngUnknown As Long 'always 1
+    lngFileName(0 To 5) As Long 'use sprintf(somechar, "%08X.wma", filename[x]);
+    lngSongTime(0 To 5) As Long
+    strSongName(0 To 5) As String * MAX_SONG_NAME
+    bytFiller(0 To 63) As Byte
+End Type
+
+Private ff As Integer 'File pointer for st.db file
+Private Header As SoundTrack_Header
+Private SongGroups() As SongGroup
+Private SongGroupNo(100) As Integer
+Private blnIni As Boolean
+
+Public Function Initialize(STFileLoc As String) As Boolean
+    
+    'Declares Memory Varibles
+    Dim lngA As Long
+    Dim lngB As Long
+    
+    'On Error GoTo ErrHandler
+    
+    ff = FreeFile
+    Initialize = True
+    ReDim SongGroups(0)
+    
+    'Opens ST.DB File
+    Open frmMain.strSTDBLoc For Binary Access Read As #ff
+    Get #ff, 1, Header
+    
+    'Read first songgroup
+    Get #ff, , SongGroups(0)
+    
+    'Read all the other songgroups
+    While Not EOF(ff)
+    
+        'Add one element to the array
+        ReDim Preserve SongGroups(UBound(SongGroups) + 1)
+        Get #ff, , SongGroups(UBound(SongGroups))
+    Wend
+    
+    'Closes Open File
+    Close #ff
+    
+    lngB = 0
+    
+    'Writes SongGroupNo Table (0 - 5)
+    For lngA = 1 To 100
+        DoEvents
+        
+        SongGroupNo(lngA) = lngB
+        lngB = lngB + 1
+        
+        If lngB = 6 Then lngB = 0
+        
+    Next lngA
+    
+    'Tells other functions that We Loaded File
+    blnIni = True
+        
+    Exit Function
+    
+ErrHandler:
+    Debug.Print Err.Description
+    Initialize = False
+    
+End Function
+
+Public Function SaveST() As Boolean
+    'On Error GoTo ErrHnd
+    
+    'Declares Memory Varibles
+    Dim intFF As Integer
+    Dim lngA As Long
+    
+    intFF = FreeFile
+    
+    'Opens Local ST.DB File (Diffrent File Name)
+    Open frmMain.strSTDBLoc For Binary As #intFF
+    
+    'Writes Header to file
+    Put #intFF, , Header
+    
+    For lngA = 0 To UBound(SongGroups)
+        DoEvents
+        
+        'Writes Data to file
+        Put #intFF, , SongGroups(lngA)
+    Next
+    
+    'Closes Open File
+    Close #intFF
+    
+    Exit Function
+    
+End Function
+
+Public Function TerminateST()  'strSTDBLoc
+    
+    'Declares Memory Varibles
+    Dim intFF As Integer
+    Dim lngA As Long
+    
+    intFF = FreeFile
+    
+    'Opens Local ST.DB File (Diffrent File Name)
+    Open frmMain.strSTDBLoc For Binary As #intFF
+    
+    'Writes Header to file
+    Put #intFF, , Header
+    
+    For lngA = 0 To UBound(SongGroups)
+        DoEvents
+        
+        'Writes Data to file
+        Put #intFF, , SongGroups(lngA)
+    Next
+    
+    'Closes Open File
+    Close #intFF
+    
+    'Tells Us that we terminated ST Manager
+    blnIni = False
+    
+End Function
+
+Public Function AddSong(strSongTitle As String, strPath As String, strTimeSeconds As String, lngSoundTrack As Long) As String
+     
+    'Declares Memory Varibles
+    Dim strOutputfile As String         'Audio File Xbox will use
+    Dim lngSoundGroup As Long           'Which SongGroup to Write Song Too
+    Dim lngSoundGroupArray As Long      'Keeps SongGroup(X) << X = (0 - 83)
+    Dim lngStCount As Long              'Keeps SoundTrack Count (from header)
+            
+    'Finds Xbox FileName (first 4 Characters is Folder Name)
+    strOutputfile = Right(Format("0000" & Hex(lngSoundTrack), "0000"), 4) & Right(Format("0000" & Hex(Header.lngNextSongId), "0000"), 4)
+    
+    'Increases NextSongID Varible
+    Header.lngNextSongId = (Header.lngNextSongId + 1)
+        
+    'Finds SoundTrack Song Count
+    lngStCount = Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngSongCount
+       
+    'Checks if this is first Song in SoundTrack
+    If lngStCount <= 6 Then
+    
+        'Sets Storing Location
+        lngSoundGroup = Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngGroupId(0)
+        lngSoundGroupArray = SongGroupNo(lngStCount + 1)
+        
+      Else
+        
+        'Declares More Varibles
+        Dim intSongGroupA(1) As Integer
+        Dim intNewSongGroup As Integer
+        Dim intWhichArray As Integer
+        
+        'Default Values
+        intWhichArray = 0
+        
+        'Caculates Which SoundGroup To Use
+        intSongGroupA(0) = Int(lngStCount / 6) + chk4Decimal(CStr(lngStCount / 6))
+        intSongGroupA(1) = Int((lngStCount + 1) / 6) + chk4Decimal(CStr((lngStCount + 1) / 6))
+        
+        'Checks if We Need New SongGroup
+        If intSongGroupA(0) <> intSongGroupA(1) Then
+            
+            'REGISTER NEW SONGGROUP-----------------------
+            
+            'Finds Free SongGroup
+            intNewSongGroup = FindFreeSongGroup
+            
+            'Adds New SongGroup to Header (FUCKED UP "I THINK") (CHANGED 1 TO 0)
+            Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngGroupId(intSongGroupA(1) - 1) = intNewSongGroup
+
+            'Updates New SoundTrackID
+            SongGroups(intNewSongGroup).lngSoundtrackId = Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngID
+            
+            'Adds the GroupID Information (FUCKED UP "I THINK")
+            SongGroups(intNewSongGroup).lngGroupId = intNewSongGroup
+            
+            'Either 1 or 0 (CHANGED FROM 1 to 0)
+            intWhichArray = 1
+                      
+        End If
+        
+        'Finds Locations to Write Too ("- 1" TEST (Working I think))
+        lngSoundGroup = Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngGroupId(intSongGroupA(intWhichArray) - 1)
+        lngSoundGroupArray = SongGroupNo(lngStCount + 1)
+        
+    End If
+    
+    'Returns Output File
+    AddSong = strOutputfile
+        
+    'Checks if 500(max) songs are used
+    If lngStCount >= 500 Then
+        
+        AddSong = "ERR: MAXED OUT"
+        Exit Function
+    End If
+          
+    'Checks Name Length (No Bigger than 32)
+    If Len(strSongTitle) > 32 Then
+        strSongTitle = Left(strSongTitle, 32)
+    End If
+    
+    'Writes Data
+    SongGroups(lngSoundGroup).lngFileName(lngSoundGroupArray) = Val("&H" & strOutputfile)
+    SongGroups(lngSoundGroup).lngSongTime(lngSoundGroupArray) = (strTimeSeconds * 1000)
+    SongGroups(lngSoundGroup).strSongName(lngSoundGroupArray) = StrConv(strSongTitle, vbUnicode) & String(MAX_SOUNDTRACK_NAME - Len(StrConv(strSongTitle, vbUnicode)), Chr(0))
+
+    'Increases SoundTrack Count
+    Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngSongCount = (Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngSongCount + 1)
+                   
+    'Increases Header Total Time
+    Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngTotalTime = Header.stSoundtracks(FindHeaderfromID(lngSoundTrack)).lngTotalTime + (strTimeSeconds * 1000)
+    
+End Function
+
+Public Function AddSoundTrack(strSoundTrackName As String, tvSoundTracks As TreeView)
+               
+    'Checks if theres a SoundTrackName
+    If strSoundTrackName = "" Then Exit Function
+    
+    'Increases Nessarcy Data Types
+    Header.lngCount = Header.lngCount + 1   'Track Count (0-99)
+    Header.lngNextId = Header.lngNextId + 1 'Next SoundTrack ID
+    
+    'Adds New SoundTrack to Database
+    Header.stSoundtracks(Header.lngCount - 1).strName = StrConv(strSoundTrackName, vbUnicode) & String(MAX_SOUNDTRACK_NAME - Len(StrConv(strSoundTrackName, vbUnicode)), Chr(0))
+    Header.stSoundtracks(Header.lngCount - 1).lngID = (Header.lngNextId - 1)
+    Header.stSoundtracks(Header.lngCount - 1).lngSongCount = 0
+    Header.stSoundtracks(Header.lngCount - 1).lngTotalTime = 0
+    
+    'Adds GroupID
+    Header.stSoundtracks(Header.lngCount - 1).lngGroupId(0) = FindFreeSongGroup
+    
+    'ORGINAL
+    'SongGroups(Header.lngNextId - 1).lngGroupId = Header.stSoundtracks(Header.lngCount - 1).lngGroupId(0)
+    SongGroups(Header.stSoundtracks(Header.lngCount - 1).lngGroupId(0)).lngGroupId = Header.stSoundtracks(Header.lngCount - 1).lngGroupId(0)
+    
+    'Reserves ONE SongGroup (6 Songs Max)
+    SongGroups(Header.stSoundtracks(Header.lngCount - 1).lngGroupId(0)).lngSoundtrackId = (Header.lngNextId - 1)
+       
+    'Fixes Header
+    Header.lngID(Header.lngCount - 1) = (Header.lngNextId - 1)
+    
+    'Adds Item to Listview
+    tvSoundTracks.Nodes.Add "XB", tvwChild, "#" & (Header.lngNextId - 1), strSoundTrackName, 4
+    
+    'Selects Created SoundTrack
+    tvSoundTracks.Nodes(tvSoundTracks.Nodes.Count).Selected = True
+    
+End Function
+
+Public Function ReadSoundTracks(tvSoundTracks As TreeView)
+
+    'Declares Memory Units
+    Dim strName As String
+    Dim lngA As Long
+       
+    'Resets Xbox Treeview
+    tvSoundTracks.Nodes.Clear
+    tvSoundTracks.Nodes.Add , , "XB", "Xbox Sound Tracks", 14
+    tvSoundTracks.Nodes("XB").Expanded = True
+
+    'Loops Through ALL SoundTracks
+    For lngA = 0 To Header.lngCount - 1
+    
+        'Grabs SoundTrackNames & Removes NULLs
+        strName = FixName(Header.stSoundtracks(lngA).strName)
+        
+        'Adds Item to Treeview
+        tvSoundTracks.Nodes.Add "XB", tvwChild, "#" & Header.lngID(lngA), strName, 4
+               
+    Next lngA
+        
+End Function
+
+Public Function SoundTrackDetail(SoundTrack As Long, lvItem As ListView)
+    
+    'Declares Memory Varibles
+    Dim lngB As Long
+    Dim lngStCount As Long
+    Dim lngTotalAdded As Long
+    
+    'Default Values
+    lngTotalAdded = 0
+    
+    'Clears Listview Up
+    lvItem.ListItems.Clear
+    
+    'Finds SoundTrack Song Count
+    lngStCount = Header.stSoundtracks(FindHeaderfromID(SoundTrack)).lngSongCount
+            
+    'Loops through Each SongGroups
+    For lngB = 0 To UBound(SongGroups)
+    
+        'Checks SoundTrack ID
+        If SoundTrack = SongGroups(lngB).lngSoundtrackId Then
+                    
+            'Loops through each Group
+            For i = 0 To 5
+                
+                'Checks if we added all REAL info
+                If lngTotalAdded = lngStCount Then
+                    Exit For
+                End If
+                
+                'Increases Counter (That Way We Dont Read Old Info)
+                lngTotalAdded = lngTotalAdded + 1
+                
+                'Checks for String in SongName
+                If Len(FixName(SongGroups(lngB).strSongName(i))) > 0 Then
+                              
+                    'Lists Data on Listview
+                    lvItem.ListItems.Add , , FixName(SongGroups(lngB).strSongName(i))
+                    lvItem.ListItems(lvItem.ListItems.Count).SubItems(2) = Format("000" & Hex(SongGroups(lngB).lngFileName(i)), "00000000") & ".wma"
+                    lvItem.ListItems(lvItem.ListItems.Count).SubItems(1) = ConvertMillisecondsToTime(SongGroups(lngB).lngSongTime(i))
+                                       
+                End If
+                                
+            Next
+        End If
+    Next
+    
+End Function
+
+Public Function FindHeaderfromID(lngID As Long)
+    
+    'Declares Memory Varibles
+    Dim lngB As Long
+        
+    'Sets None Value
+    FindHeaderfromID = 9999
+    
+    'Finds SoundTrack Song Count
+    For lngB = 0 To Header.lngCount - 1
+        DoEvents
+        
+        'If Similiar ID's found
+        If Header.stSoundtracks(lngB).lngID = lngID Then
+            
+            'Writes HeaderST to Memory
+            FindHeaderfromID = lngB
+            
+            Exit For
+        End If
+      
+    Next lngB
+End Function
+Public Function FindFreeSongGroup() As Integer
+    
+    'Checks if We initilized ST Manager
+    If blnIni <> True Then Exit Function
+    
+    'Delcares Memory Varibles
+    Dim lngA As Long
+    Dim lngB As Long
+    Dim blnFound As Boolean
+    Dim lngUsedIDs() As Long
+    
+    'Checks if there are NO used IDs
+    If (Header.lngCount) = 0 Then
+        
+        'Returns Info
+        FindFreeSongGroup = 0
+        
+        Exit Function
+    End If
+    
+    'Checks for used ID's (Xbox Keeps Deleted Info, so we gotta do this)
+    For lngA = 0 To (Header.lngCount - 1)
+        DoEvents
+        
+        'Resizes the Array and Keeps Existing Data
+        ReDim Preserve lngUsedIDs(lngA)
+        
+        'Adds Used ID to Array
+        lngUsedIDs(lngA) = Header.stSoundtracks(lngA).lngID
+                
+    Next lngA
+       
+    'Loops through the SongGroups
+    For lngA = 0 To 59 'UBound(lngUsedIDs) + 1
+        DoEvents
+        
+        'Loops through Used IDs
+        For lngB = 0 To UBound(lngUsedIDs)
+            DoEvents
+            
+            'Checks if its Avaible
+            If lngUsedIDs(lngB) = SongGroups(lngA).lngSoundtrackId Then
+                    
+                'Found, Next SongGroup
+                blnFound = True
+                Exit For
+                
+            End If
+            
+            'We havent Found this # in used Ids
+            blnFound = False
+            
+        Next lngB
+        
+        If blnFound = False Then
+            GoTo JumpHere
+        End If
+        
+    Next lngA
+    
+JumpHere:
+    
+    'Returns Unused SongGroup
+    If blnFound = False Then
+            
+        'Returns Free SongGroup
+        FindFreeSongGroup = lngA
+        
+        Exit Function
+              
+      Else
+          
+        'Returns Invaild ID
+        FindFreeSongGroup = 9999
+        MsgBox "9999 ERRROR"
+    End If
+        
+    
+        
+End Function
+
+Public Function ConvertMillisecondsToTime(Milliseconds As Long) As String
+    
+    'Declares Memory Varibles
+    Dim CurrentHSecs As Double
+    Dim HSecs As Long
+    Dim Mins As Long
+    Dim Secs As Long
+    Dim Hours As Double
+    
+    CurrentHSecs = Int((Milliseconds / 10) + 0.5)
+
+    'Converts Stuff
+    Mins = Int(CurrentHSecs / 6000)
+    CurrentHSecs = CurrentHSecs - (Mins * 6000)
+    Secs = Int((CurrentHSecs) / 100)
+    CurrentHSecs = CurrentHSecs - (Secs * 100)
+    HSecs = CurrentHSecs
+    
+    'Returns Information
+    ConvertMillisecondsToTime = Format(Mins, "00") & ":" & Format(Secs, "00")
+
+
+End Function
+
+Public Function ConvertTimeToMilliseconds(TimeString As String, Optional IncludeHours As Boolean) As Long
+        
+    'Declares Varibles
+    Dim i As Integer
+    Dim Mins As Long
+    Dim Secs As Long
+    Dim HSecs As Long
+    Dim Hours As Long
+    Dim CurrentString As String
+    Dim CurrentChar As String
+    
+    'Checks if theres Vaild String
+    If TimeString = vbNullString Then Exit Function
+    
+    'Sets Default Values
+    Hours = -1
+    Mins = -1
+    Secs = -1
+    HSecs = -1
+    
+    'Sets Storage to NULL (Nothing)
+    CurrentString = vbNullString
+
+    'Loops through Time String
+    For i = 1 To Len(TimeString)
+    
+        'Grabs One Character
+        CurrentChar = Mid$(TimeString, i, 1)
+
+        'Checks if : or Nothing
+        If CurrentChar <> ":" And CurrentChar <> vbNullChar Then
+            CurrentString = CurrentString & CurrentChar
+        End If
+
+        If CurrentChar = ":" Or CurrentChar = vbNullChar Or i = Len(TimeString) Then
+
+            If IncludeHours And Hours = -1 Then
+                Hours = CLng(Val(CurrentString))
+                CurrentString = vbNullString
+            ElseIf Mins = -1 Then
+                Mins = CLng(Val(CurrentString))
+                CurrentString = vbNullString
+            ElseIf Secs = -1 Then
+                Secs = CLng(Val(CurrentString))
+                CurrentString = vbNullString
+            ElseIf HSecs = -1 Then
+                HSecs = CLng(Val(CurrentString))
+                Exit For
+            End If
+        End If
+        
+    Next i
+    
+    'Returns Info
+    ConvertTimeToMilliseconds = (HSecs * 10) + (Secs * 1000) + (Mins * 60000) + (Hours * 3600000)
+End Function
+
+Public Function FixName(ByVal StrUnicode As String) As String
+
+    'Declare variables
+    Dim lngA As Long
+    
+    'Find double 00 character
+    lngA = InStr(StrUnicode, Chr(0) & Chr(0))
+    
+    If lngA > 0 Then
+        StrUnicode = Mid(StrUnicode, 1, lngA - 1)
+    End If
+    
+    'Remove other 00 chracters
+    StrUnicode = Replace(StrUnicode, Chr(0), "")
+    
+    'Return the found string
+    FixName = StrUnicode
+    
+End Function
+
+Public Function chk4Decimal(strInput As String) As Integer
+    
+    'Checks for Decimals
+    If InStr(1, strInput, ".") Then
+        
+        'Returns 1
+        chk4Decimal = 1
+      Else
+        
+        'Returns 0
+        chk4Decimal = 0
+    End If
+    
+End Function

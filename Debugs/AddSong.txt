@@ -1,0 +1,154 @@
+11
+
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+wlngSoundGroup: 1
+wlngSoundGroupArray: 3
+wlngSoundGroup: 1
+wlngSoundGroupArray: 4
+wlngSoundGroup: 1
+wlngSoundGroupArray: 5
+wlngSoundGroup: 1
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+
+01
+
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+wlngSoundGroup: 1
+wlngSoundGroupArray: 3
+wlngSoundGroup: 1
+wlngSoundGroupArray: 4
+wlngSoundGroup: 1
+wlngSoundGroupArray: 5
+wlngSoundGroup: 1
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+
+00
+wlngSoundGroup: 1
+wlngSoundGroupArray: 3
+wlngSoundGroup: 1
+wlngSoundGroupArray: 4
+wlngSoundGroup: 1
+wlngSoundGroupArray: 5
+wlngSoundGroup: 2
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 1
+wlngSoundGroup: 0
+wlngSoundGroupArray: 2
+wlngSoundGroup: 0
+wlngSoundGroupArray: 3
+wlngSoundGroup: 0
+wlngSoundGroupArray: 4
+wlngSoundGroup: 0
+wlngSoundGroupArray: 5
+
+-----------Checking When Register------------
+11
+
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+wlngSoundGroup: 1
+wlngSoundGroupArray: 3
+wlngSoundGroup: 1
+wlngSoundGroupArray: 4
+wlngSoundGroup: 1
+wlngSoundGroupArray: 5
+Registering New SongGroup (AddSong)
+wlngSoundGroup: 1
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+
+-----------If count = 0 to count < 5-----------
+
+11
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 5
+Registering New SongGroup (AddSong)
+wlngSoundGroup: 1
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+
+-----------above + lngSoundGroupArray Working--------
+11
+
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 1
+wlngSoundGroup: 0
+wlngSoundGroupArray: 2
+wlngSoundGroup: 0
+wlngSoundGroupArray: 3
+wlngSoundGroup: 0
+wlngSoundGroupArray: 4
+wlngSoundGroup: 0
+wlngSoundGroupArray: 5
+Registering New SongGroup (AddSong)
+wlngSoundGroup: 1
+wlngSoundGroupArray: 0
+wlngSoundGroup: 1
+wlngSoundGroupArray: 1
+wlngSoundGroup: 1
+wlngSoundGroupArray: 2
+
+-----------Above & ---------------
+01
+
+wlngSoundGroup: 4
+wlngSoundGroupArray: 0
+wlngSoundGroup: 4
+wlngSoundGroupArray: 1
+wlngSoundGroup: 4
+wlngSoundGroupArray: 2
+wlngSoundGroup: 4
+wlngSoundGroupArray: 3
+wlngSoundGroup: 4
+wlngSoundGroupArray: 4
+wlngSoundGroup: 4
+wlngSoundGroupArray: 5
+Registering New SongGroup (AddSong)
+wlngSoundGroup: 0
+wlngSoundGroupArray: 0
+wlngSoundGroup: 0
+wlngSoundGroupArray: 1
+wlngSoundGroup: 0
+wlngSoundGroupArray: 2
+

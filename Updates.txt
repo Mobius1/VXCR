@@ -1,0 +1,32 @@
+
++New FTP Buffer Size (Faster Uploads on EvoX and Other Dashboards)
++Resizes Added
++SoundTrack Manger Module Fixed (Tested, but not 100%)
++Splash Window Showed in Taskbar, Doesnt anymore
++Preview Button Plays Uploaded Songs by VXCR & Dashboard Rip Songs
++Delete SoundTracks (Doesnt Delete Actual Files Yet)
++Uploading Songs, Script Out of Ranged Fixed (Array Issue)
++ALL FTP Clients Should work (Untested)
+**COMMENT ADDSOUNDTRACK
++After Upload Complete, ST.DB Will be Uploaded Automaticly.
++Select Temp Folder
++Select All/UnSelect All Added
++Wma Converted To Song BitRate or Manually Selected (Smart Detect)
++Shows Song BitRate (Local Only) (Optional)
++Displays ID Tag now
++Saves FTP Username & Password
++Stores Recent Connection List & Last Used IP
++Saves/Loads Settings
++More Settings Added
++Before Upload, Checks for Selected SoundTrack.
++New SoundTrack will Automaticly be Selected.
++Refreshs Xbox Song List after Upload.
++Search Feature Added
++Add SoundTrack and Hit Cancel, wont Crash anymore
++Menu Add SoundTrack works
+
+[PA404-104]
+
++First Public Release
+
+
